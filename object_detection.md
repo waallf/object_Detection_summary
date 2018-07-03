@@ -35,6 +35,25 @@
   x = x/width(grid) - col  
   y = y/geight(grid) - row
 ## YOLOV2  
+对于YOLO的改进  
+1. Batch Normalizational:Batch Normalization  
+    可以提高模型收敛速度，而且起到一定正则化的效果，降低模型的过拟合。在YOLOV2中，每个卷积层后面都添加了Batch Normalization层，并且不再使用  
+    droput  
+2.  High Resolution Classifier:  利用Image中高分辨率的图将其进行预训练  
+
+3. Convolutional with Anchor Boexs  
+在yolov1中，输入图片最终被划分为7*7网格，每个单元格预测两个边界框，yolov1最后采用的是全连接层直接对边界框进行预测，期中边界框的宽与高是想对整张图像 
+大小的，由于各个图片存在不同尺度和长款比的物体，yolov1在训练过程中适应不同物体的形状是比较困难的，这也导致yolov1在精确定位方面比较差  
+yolov2借鉴了Faster-Rcnn中RPN网络的anchor box，因为anchorsbox预测的是相对于anchors bbox的offsets值  
+yolov2不是采用448*448图片作为输入，而是采用416*416大小，因为yolov2模型下采样总步长是32，对于416*416的图像，最终的特征图大小为13*13，维度  
+是奇数，此时特征图的一个中心恰好只有一个中心位置。
+yolov1每个cell预测两个box，每个box包含五个值（x,y,w,h,confidence）,confidence包含两个部分（IOU以及包含物体的概率），而yolov2使用anchors boxes之  后每个box都预测一套分类概率值。
+4.Fine-Grained Features：
+yolov2提出了一种多尺度检测方法，和resnet网络的shortcut类似，将前面更高的特征图输入，这里是通过Passthrouth层抽取前面层每个2*2的局部区域，然后将其   
+转化为channel维度，对于26*26(512的特征图，经passthrough层处理之后就变成了13*13*2018的心特征图，然后与后一层的13*13的特征图拼接检测  
+
+5.  Multi-Scale Training：
+由于YOLOv2模型中只有卷积层和池化层，所以YOLOv2的输入可以不限于416*416大小的图片。为了增强模型的鲁棒性，YOLOv2采用了多尺度输入训练策略，具体来说就  是在训练过程中每间隔一定的iterations之后改变模型的输入图片大小。由于YOLOv2的下采样总步长为32，输入图片大小选择一系列为32倍数的值：{320,353,…,608}，  输入图片最小为320*320，此时对应的特征图大小为10*10（不是奇数了，确实有点尴尬），而输入图片最大为608*608，对应的特征图大小为19*19。在训练过程，每隔10个iterations随机选择一种输入图片大小，然后只需要修改对最后检测层的处理就可以重新训练。
 ## YOLOV3  
 
 
